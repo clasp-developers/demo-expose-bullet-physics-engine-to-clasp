@@ -1,5 +1,5 @@
 # demo-bullet
-A demonstration of binding the Bullet Physics engine to Clasp Common Lisp
+A demonstration of binding the C++ Bullet Physics engine to Clasp Common Lisp
 
 ## Building and running
 
