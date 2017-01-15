@@ -1,0 +1,61 @@
+
+;;;
+;;; Load the Bullet engine dynamic libraries
+;;;
+(progn
+  (dlopen "/usr/local/lib/libBulletDynamics.dylib")
+  (dlopen "/usr/local/lib/libBulletCollision.dylib")
+  (dlopen "/usr/local/lib/libLinearMath.dylib"))
+
+;;;
+;;; Load the code that binds Bullet engine classes/methods/functions to claspCL
+;;;
+(load (concatenate 'string (ext:getcwd) "exposeBullet.bc"))
+
+;;;
+;;; Setup and step through the simulation of a sphere dropping
+;;; on a plane
+;;;
+(defun sphere-drop-simulation ()
+  (let* ((broadphase (make-cxx-object 'bt:bt-dbvt-broadphase))
+	 (collision-configuration (make-cxx-object 'bt:bt-default-collision-configuration))
+	 (dispatcher (bt:make-bt-collision-dispatcher collision-configuration))
+	 (solver (make-cxx-object 'bt:bt-sequential-impulse-constraint-solver))
+	 (dynamics-world (bt:make-bt-discrete-dynamics-world
+			  dispatcher broadphase solver collision-configuration)))
+    (bt:set-gravity dynamics-world (bt:make-bt-vector3 0 -10 0))
+    (let* ((ground-shape (bt:make-bt-static-plane-shape (bt:make-bt-vector3 0 1 0) 1))
+	   (fall-shape (bt:make-bt-sphere-shape 1))
+	   (ground-motion-state (bt:make-bt-default-motion-state
+				 (bt:make-bt-transform-quaternion
+				  (bt:make-bt-quaternion 0 0 0 1)
+				  (bt:make-bt-vector3 0 -1 0))))
+	   (ground-rigid-body-ci (bt:make-bt-rigid-body/bt-rigid-body-construction-info
+				  0 ground-motion-state ground-shape (bt:make-bt-vector3 0 0 0)))
+	   (ground-rigid-body (bt:make-bt-rigid-body.bt-rigid-body-construction-info ground-rigid-body-ci)))
+      (bt:add-rigid-body dynamics-world ground-rigid-body)
+      (let* ((fall-motion-state (bt:make-bt-default-motion-state (bt:make-bt-transform-quaternion
+								  (bt:make-bt-quaternion 0 0 0 1)
+								  (bt:make-bt-vector3 0 50 0))))
+	     (mass 1)
+	     (fall-inertia (bt:make-bt-vector3 0 0 0)))
+	(bt:calculate-local-inertia fall-shape mass fall-inertia)
+	(let* ((fall-rigid-body-ci (bt:make-bt-rigid-body/bt-rigid-body-construction-info
+				    mass fall-motion-state fall-shape fall-inertia))
+	       (fall-rigid-body (bt:make-bt-rigid-body.bt-rigid-body-construction-info fall-rigid-body-ci))
+	       (time-step (/ 1.0 60.0)))
+	  (bt:add-rigid-body dynamics-world fall-rigid-body)
+	  (loop for i from 0 below 300
+	     with transform = (make-cxx-object 'bt:bt-transform)
+	     do (bt:step-simulation dynamics-world time-step 10 time-step)
+	     do (bt:get-world-transform (bt:get-motion-state fall-rigid-body) transform)
+;;	     do (format t "sphere height: ~a~%" (bt:extract-scalar (bt:get-y (bt:get-origin transform))))
+	     do (format t "sphere height: ~a~%" (bt:get-y (bt:get-origin transform)))
+	       ))))))
+
+;;;
+;;; Run the simulation
+;;;
+(sphere-drop-simulation)
+
+(quit)
