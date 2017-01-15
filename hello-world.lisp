@@ -16,7 +16,7 @@
 ;;; Setup and step through the simulation of a sphere dropping
 ;;; on a plane
 ;;;
-(defun sphere-drop-simulation ()
+(defun sphere-drop-simulation (&optional (steps 300) suppress-output)
   (let* ((broadphase (make-cxx-object 'bt:bt-dbvt-broadphase))
 	 (collision-configuration (make-cxx-object 'bt:bt-default-collision-configuration))
 	 (dispatcher (bt:make-bt-collision-dispatcher collision-configuration))
@@ -45,17 +45,25 @@
 	       (fall-rigid-body (bt:make-bt-rigid-body.bt-rigid-body-construction-info fall-rigid-body-ci))
 	       (time-step (/ 1.0 60.0)))
 	  (bt:add-rigid-body dynamics-world fall-rigid-body)
-	  (loop for i from 0 below 300
+	  (loop for i from 0 below steps
 	     with transform = (make-cxx-object 'bt:bt-transform)
 	     do (bt:step-simulation dynamics-world time-step 10 time-step)
 	     do (bt:get-world-transform (bt:get-motion-state fall-rigid-body) transform)
-;;	     do (format t "sphere height: ~a~%" (bt:extract-scalar (bt:get-y (bt:get-origin transform))))
-	     do (format t "sphere height: ~a~%" (bt:get-y (bt:get-origin transform)))
-	       ))))))
+	     ;;	     do (format t "sphere height: ~a~%" (bt:extract-scalar (bt:get-y (bt:get-origin transform))))
+	     do (unless suppress-output
+		  (format t "sphere height: ~a~%" (bt:get-y (bt:get-origin transform)))))
+	  (bt:remove-rigid-body dynamics-world fall-rigid-body)
+	  (bt:remove-rigid-body dynamics-world ground-rigid-body))))))
 
 ;;;
 ;;; Run the simulation
 ;;;
 (sphere-drop-simulation)
+
+(format t "Running the simulation using C++~%")
+(time (bt:cxx-sphere-drop-simulation 1000000 t))
+
+(format t "Running the simulation using ClaspCL~%")
+(time (sphere-drop-simulation 1000000 t))
 
 (quit)

@@ -1,14 +1,14 @@
 
 #include <clasp/clasp.h>
+#include <clasp/core/bformat.h>
 #include <iostream>
 #include <btBulletDynamicsCommon.h>
 
 //
 // The demo written in C++
 //
-void runAll()
+void cxx_sphere_drop_simulation(size_t steps, bool suppress_output)
 {
-    std::cout << "Hello World!" << std::endl;
     btBroadphaseInterface* broadphase = new btDbvtBroadphase();
 
     btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -43,13 +43,13 @@ void runAll()
     dynamicsWorld->addRigidBody(fallRigidBody);
 
 
-    for (int i = 0; i < 300; i++) {
+    for (int i = 0; i < steps; i++) {
 	dynamicsWorld->stepSimulation(1 / 60.f, 10);
 
 	btTransform trans;
 	fallRigidBody->getMotionState()->getWorldTransform(trans);
 
-	std::cout << "sphere height: " << trans.getOrigin().getY() << std::endl;
+	if (!suppress_output) BFORMAT_T(BF("sphere height: %lf\n") % trans.getOrigin().getY());
     }
 
     dynamicsWorld->removeRigidBody(fallRigidBody);
@@ -122,7 +122,7 @@ void startup()
 {
     using namespace clbind;
     package("BT") [
-		   def("runAll",&runAll)
+		   def("cxx_sphere_drop_simulation",&cxx_sphere_drop_simulation)
 		   //		   ,class_<btScalar>("btScalar",no_default_constructor)
 		   ,class_<btBroadphaseInterface>("btBroadphaseInterface",no_default_constructor)
 		   ,class_<btDbvtBroadphase,btBroadphaseInterface>("btDbvtBroadphase")
