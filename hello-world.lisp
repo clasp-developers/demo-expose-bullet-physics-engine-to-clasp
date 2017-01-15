@@ -49,9 +49,7 @@
 	     with transform = (make-cxx-object 'bt:bt-transform)
 	     do (bt:step-simulation dynamics-world time-step 10 time-step)
 	     do (bt:get-world-transform (bt:get-motion-state fall-rigid-body) transform)
-	     ;;	     do (format t "sphere height: ~a~%" (bt:extract-scalar (bt:get-y (bt:get-origin transform))))
-	     do (unless suppress-output
-		  (format t "sphere height: ~a~%" (bt:get-y (bt:get-origin transform)))))
+	     do (unless suppress-output (format t "sphere height: ~a~%" (bt:get-y (bt:get-origin transform)))))
 	  (bt:remove-rigid-body dynamics-world fall-rigid-body)
 	  (bt:remove-rigid-body dynamics-world ground-rigid-body))))))
 
