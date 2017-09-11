@@ -78,12 +78,15 @@ void cxx_sphere_drop_simulation(size_t steps, bool suppress_output)
 // Translators that translate btScalar to and from Clasp Common Lisp values
 //
 namespace translate {
+#if 0
     template <>
     struct from_object<btScalar, std::true_type> {
 	typedef btScalar DeclareType;
 	DeclareType _v;
 	from_object(core::T_sp o) : _v(clasp_to_double(gc::As<core::Number_sp>(o))) {};
     };
+#endif
+    
     template <>
     struct from_object<const btScalar&, std::true_type> {
 	typedef btScalar DeclareType;
@@ -96,6 +99,8 @@ namespace translate {
 	DeclareType _v;
 	from_object(core::T_sp o) : _v(clasp_to_double(gc::As<core::Number_sp>(o))) {};
     };
+    // btScalar is float and we already have a translator
+#if 0
     template <>
     struct to_object<btScalar> {
 	typedef btScalar GivenType;
@@ -103,6 +108,7 @@ namespace translate {
 	    return core::make_single_float(v);
 	}
     };
+#endif
     template <>
     struct to_object<const btScalar&> {
 	typedef const btScalar& GivenType;

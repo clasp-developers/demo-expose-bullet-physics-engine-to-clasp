@@ -3,24 +3,24 @@
 ;;; Load the Bullet engine dynamic libraries
 ;;;
 (progn
-  (dlopen "/usr/local/lib/libBulletDynamics.dylib")
-  (dlopen "/usr/local/lib/libBulletCollision.dylib")
-  (dlopen "/usr/local/lib/libLinearMath.dylib"))
+  (core:dlopen "/usr/local/lib/libBulletDynamics.dylib")
+  (core:dlopen "/usr/local/lib/libBulletCollision.dylib")
+  (core:dlopen "/usr/local/lib/libLinearMath.dylib"))
 
 ;;;
 ;;; Load the code that binds Bullet engine classes/methods/functions to claspCL
 ;;;
-(load (concatenate 'string (ext:getcwd) "exposeBullet.bc"))
+(load (merge-pathnames #P"exposeBullet.bc" *load-truename*))
 
 ;;;
 ;;; Setup and step through the simulation of a sphere dropping
 ;;; on a plane
 ;;;
 (defun sphere-drop-simulation (&optional (steps 300) suppress-output)
-  (let* ((broadphase (make-cxx-object 'bt:bt-dbvt-broadphase))
-	 (collision-configuration (make-cxx-object 'bt:bt-default-collision-configuration))
+  (let* ((broadphase (core:make-cxx-object 'bt:bt-dbvt-broadphase))
+	 (collision-configuration (core:make-cxx-object 'bt:bt-default-collision-configuration))
 	 (dispatcher (bt:make-bt-collision-dispatcher collision-configuration))
-	 (solver (make-cxx-object 'bt:bt-sequential-impulse-constraint-solver))
+	 (solver (core:make-cxx-object 'bt:bt-sequential-impulse-constraint-solver))
 	 (dynamics-world (bt:make-bt-discrete-dynamics-world
 			  dispatcher broadphase solver collision-configuration)))
     (bt:set-gravity dynamics-world (bt:make-bt-vector3 0 -10 0))
@@ -46,7 +46,7 @@
 	       (time-step (/ 1.0 60.0)))
 	  (bt:add-rigid-body dynamics-world fall-rigid-body)
 	  (loop for i from 0 below steps
-	     with transform = (make-cxx-object 'bt:bt-transform)
+	     with transform = (core:make-cxx-object 'bt:bt-transform)
 	     do (bt:step-simulation dynamics-world time-step 10 time-step)
 	     do (bt:get-world-transform (bt:get-motion-state fall-rigid-body) transform)
 	     do (unless suppress-output (format t "sphere height: ~a~%" (bt:get-y (bt:get-origin transform)))))
@@ -64,4 +64,4 @@
 (format t "Running the simulation using ClaspCL~%")
 (time (sphere-drop-simulation 1000000 t))
 
-(quit)
+(core:quit)

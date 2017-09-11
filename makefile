@@ -9,6 +9,7 @@ export OPTIONS = -I$(CLASP_HOME)/include \
 		-I/usr/local/include/bullet \
 		-c -emit-llvm \
 		-std=c++11 \
+		-Wno-macro-redefined \
 		-Wno-deprecated-register \
 		-Wno-inconsistent-missing-override
 
