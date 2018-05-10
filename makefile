@@ -6,6 +6,7 @@ export DEMO_HOME = $(shell pwd)
 export OPTIONS = -I$(CLASP_HOME)/include \
 		-I$(CLASP_HOME)/src/main \
 		-I$(CLASP_HOME)/build/$(CLASP_RUNTIME) \
+		-I$(CLASP_HOME)/build/$(CLASP_RUNTIME)/generated \
 		-I/usr/local/include/bullet \
 		-c -emit-llvm \
 		-std=c++11 \
